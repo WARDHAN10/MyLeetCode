@@ -7,15 +7,15 @@ var isIsomorphic = function (s, t) {
   for (j of String(t).split("")) {
     Obj2[j] = Obj2[j] ? Obj2[j] + 1 : 1;
   }
+  const val1 = Obj2
   console.log(
-    JSON.stringify(Object.values(Obj1).sort().join().trim()),
-    JSON.stringify(Object.values(Obj2).sort().join().trim())
+    Obj1,Obj2
   );
-  if (
-    JSON.stringify(Object.values(Obj1).sort()) != JSON.stringify(Object.values(Obj2).sort())
-  )
-    return false;
-  else return true;
+  // if (
+  //   JSON.stringify(Object.values(Obj1).sort()) != JSON.stringify(Object.values(Obj2).sort())
+  // )
+  //   return false;
+  // else return true;
 };
 
-console.log(isIsomorphic("bbbaaaba", "aaabbbba"));
+console.log(isIsomorphic("paper", "title"));
