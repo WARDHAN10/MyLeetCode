@@ -14,8 +14,8 @@ var generate = function (numRows) {
       }
       Pascal[i].push(1);
     }
-    return Pascal;
+    return Pascal[60][30];
   }
 };
 
-console.log(generate(5));
+console.log(generate(60));
