@@ -1,3 +1,4 @@
+//time complexity is O(log(N))
 const BinarySearch = (arr, key) => {
     let low = 0,
         high = arr.length-1
