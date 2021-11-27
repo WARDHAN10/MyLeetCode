@@ -1,30 +1,23 @@
 # //time complexity is O(log(N))
-def BinarySearch(arr, key,i):
-    low,high = i,len(arr)-1
-      
+def BS():
+    n = int(input())
+    arr = [int(x) for x in input().strip().split()]
+    key = int(input())
 
-    while (low <= high):
-        mid = int((low + high) / 2)
+    low,high = 0,len(arr)-1
+    flag = False
 
-        if (arr[mid] == key) :
-            return mid
-        elif (arr[mid] > key):
-            high = mid - 1
-        elif (arr[mid] < key):
-            low = mid + 1
+    while (low < high):
 
-    return -1
-n = int(input())
-arr = [int(x) for x in input().strip().split()]
-key = int(input())
+        if (arr[low] + arr[high] == key) :
+            flag=True
+            print(low+1,high+1)
+            break
+        elif (arr[low] + arr[high] > key):
+            high -=1
+        else:
+            low += 1
 
-done = False
-for i in range(0,len(arr)):
-    num = abs(key - arr[i])
-    ans=BinarySearch(arr, num,i)
-    if(ans != -1):
-        done = True
-        print(arr[i],print(ans))
-        break
-if(done == False):
-    print('-1')
+    if not flag:
+        print(-1)
+BS()
