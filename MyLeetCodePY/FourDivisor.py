@@ -22,9 +22,7 @@ def FourDivisor(arr):
     return Sum
 
 
-testCase = int(input())
-for i in range(testCase):
-    n = int(input())
-    arr = input().strip().split()
-    arr = [int(x) for x in arr]
-    print(FourDivisor(arr))
+
+arr = input().strip().split()
+arr = [int(x) for x in arr]
+print(FourDivisor(arr))
