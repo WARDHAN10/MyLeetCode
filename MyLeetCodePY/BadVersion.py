@@ -1,6 +1,6 @@
 
 class Solution:
-    def firstBadVersion(self, n):
+    def firstBadVersion(self, n,isBadVersion):
         low,high = 1,n
         trueIdx = -1
 
