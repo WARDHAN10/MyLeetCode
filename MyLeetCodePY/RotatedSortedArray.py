@@ -15,7 +15,7 @@ def PivotElement(arr):
 
     low,high = 0,len(arr)-1
     while(low<=high):
-        mid = low+high // 2
+        mid = int((low+high) // 2)
         if(arr[mid] <= arr[len(arr)-1]):
             high = mid-1
         else:
