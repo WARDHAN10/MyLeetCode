@@ -1,14 +1,17 @@
 def WeakRow(arr):
     Occ = []
+    act = []
     for i in range(len(arr)):
         count = 0
         
         for j in arr[i]:
             if(j == 1):
                 count+=1
-            idx = BinarySearch(Occ,count)
-            Occ.insert(idx,count)
-    return Occ
+        idx = BinarySearch(Occ,count)
+        Occ.insert(idx,count)   
+        act.insert(idx,i)
+
+    return act
 
 
 
@@ -21,7 +24,7 @@ def BinarySearch(arr, key):
         mid = int((low + high) / 2)
 
         if (arr[mid] == key) :
-            return mid
+            return mid+1
         elif (arr[mid] > key):
             high = mid - 1
         elif (arr[mid] < key):
@@ -29,5 +32,15 @@ def BinarySearch(arr, key):
 
     return low
             
+n,m  =input().split()
+matrix = []
+  
+# For user input
+for i in range(int(n)):          # A for loop for row entries
+    a =[]
+    for j in range(int(m)):      # A for loop for column entries
+         a = [int(x) for x in input().strip().split()]
+         print(a)
+    matrix.append(a)
 
-print(WeakRow([[1,1,0,0,0],[1,1,1,1,0],[1,0,0,0,0],[1,1,0,0,0],[1,1,1,1,1]]))
+print(WeakRow(matrix))
