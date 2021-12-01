@@ -7,12 +7,13 @@ def BS(arr,key):
     # find the row in which it can exist
     while(low<=high):
         mid = int((low+high)/2)
-        if(arr[mid][0] < key and key < arr[mid][-1]) :
-            print(mid)
+        if(arr[mid][low] < key and key < arr[mid][high]) :
+            low,high=0,len(arr[mid])-1
+            mid = int((low+high)/2)
             break
-        elif(arr[mid][-1] < key):
+        elif(arr[mid][high] < key):
             low = mid +1
-        elif(arr[mid][0] > key):
+        elif(arr[mid][low] > key):
             high = mid-1
 
     innerLow,innerHigh=0,len(arr[mid])-1
