@@ -1,27 +1,27 @@
-def BS(arr,key):
-    low,high=0,len(arr)-1
+def BS(matrix,target):
+    low,high=0,len(matrix)-1
     mid = int((low+high)/2)
     # corner case
-    if(key < arr[0][0] or key > arr[-1][1]):
-        return False
+    if(target < matrix[0][0] or target > matrix[-1][-1]):
+        return 'false'
     # find the row in which it can exist
     while(low<=high):
         mid = int((low+high)/2)
-        if(arr[mid][low] < key and key < arr[mid][high]) :
-            low,high=0,len(arr[mid])-1
+        if(matrix[mid][low] < target and target < matrix[mid][high]) :
+            low,high=0,len(matrix[mid])-1
             mid = int((low+high)/2)
             break
-        elif(arr[mid][high] < key):
+        elif(matrix[mid][high] < target):
             low = mid +1
-        elif(arr[mid][low] > key):
+        elif(matrix[mid][low] > target):
             high = mid-1
 
-    innerLow,innerHigh=0,len(arr[mid])-1
+    innerLow,innerHigh=0,len(matrix[mid])-1
     while(innerLow<=innerHigh):
         InnerMid =int((innerLow+innerHigh)/2)
-        if(arr[mid][InnerMid] == key):
+        if(matrix[mid][InnerMid] == target):
             return 'true'
-        elif(arr[mid][InnerMid] > key): 
+        elif(matrix[mid][InnerMid] > target): 
             innerHigh = InnerMid -1
 
         else:
@@ -37,8 +37,8 @@ for i in range(int(n)):
     matrix.append(col)
 
 for j in range(int(input())):
-    key =int(input())
+    target =int(input())
 print(BS([[1, 3, 5, 7], [10, 11, 16, 20], [23, 30, 34, 60]],3))
 for j in range(int(input())):
-    key =int(input())
+    target =int(input())
     print(BS(matrix,key))
