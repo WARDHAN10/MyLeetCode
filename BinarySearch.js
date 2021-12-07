@@ -17,4 +17,4 @@ const BinarySearch = (arr, key) => {
     return false
 }
 
-console.log(BinarySearch([-1,0,3,5,9,12],2))
+console.log(BinarySearch([10,2,5,3],10))
