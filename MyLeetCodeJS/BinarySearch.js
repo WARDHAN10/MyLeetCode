@@ -8,13 +8,13 @@ const BinarySearch = (arr, key) => {
 
         if (arr[mid] == key) {
             return mid
-        } else if (arr[mid] > key) {
-            high = mid - 1
         } else if (arr[mid] < key) {
+            high = mid - 1
+        } else if (arr[mid] > key) {
             low = mid + 1
         }
     }
     return false
 }
 
-console.log(BinarySearch([10,2,5,3],10))
+console.log(BinarySearch([10,5,3,1],1))

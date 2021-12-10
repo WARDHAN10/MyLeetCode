@@ -1,24 +1,30 @@
-const Seive = (n) => {
-  let arr = [];
-  for (let i = 2; i <= n; i++) {
-    arr.push(i);
+const SOE = (n) => {
+  let prime = []
+  for (let i = 0; i < n + 1; i++) {
+      prime.push(true)
   }
-  for (let i = 2; i < n; i++) {
-    let j = i,
-      Prod = 1;
-    if (arr.includes(j)) {
-      console.log(`j:${j}`);
-
-      while (Prod < n) {
-        Prod = j * i;
-        if (arr.includes(Prod)) arr.splice(arr.indexOf(Prod), 1);
-        j++;
+  if (n == 1) {
+      return 1
+  }
+  let p = 2
+  while (p * p <= n) {
+      if (prime[p] == true) {
+          for (let j = p * 2; j < n + 1; j += p) {
+              prime[j] = false
+          }
       }
-      Prod = 0;
-    }
+      p += 1
   }
+  prime[0] = false
+  prime[1] = false
+  const NewPrime = []
+  for (let i = 0; i < prime.length; i++) {
+      if (prime[i]) {
+          NewPrime.push(i)
+      }
+  }
+  return NewPrime
+}
 
-  return arr;
-};
 
-console.log(Seive(40));
+console.log(SOE(10))

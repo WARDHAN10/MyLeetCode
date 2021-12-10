@@ -1,10 +1,10 @@
-def WeakRow(arr):
+def WeakRow(mat):
     Occ = []
     act = []
-    for i in range(len(arr)):
+    for i in range(len(mat)):
         count = 0
         
-        for j in arr[i]:
+        for j in mat[i]:
             if(j == 1):
                 count+=1
         idx = BinarySearch(Occ,count)
