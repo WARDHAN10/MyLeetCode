@@ -1,3 +1,13 @@
+const FirstAndLast = (arr, k) => {
+    const First = FirstOcc(arr, k)
+
+    const Last = LastOcc(arr, k)
+
+
+    return [First, Last]
+}
+
+
 const FirstOcc = (arr, k) => {
 
     let low = 0,
@@ -19,7 +29,7 @@ const FirstOcc = (arr, k) => {
             }
         }
     }
-    return false
+    return -1
 
 }
 const LastOcc = (arr, k) => {
@@ -34,16 +44,16 @@ const LastOcc = (arr, k) => {
         } else if (arr[mid] < k) {
             low = mid + 1
         } else {
-            if (mid == (arr.length -1)) {
+            if (mid == (arr.length - 1)) {
                 return mid
-            } else if (arr[mid +1 ] != k) {
+            } else if (arr[mid + 1] != k) {
                 return mid
             } else {
-            low = mid +1 
+                low = mid + 1
             }
         }
     }
-    return false
+    return -1
 
 }
-console.log(LastOcc([1,1,1,1,2,2,3,3,3,3,3],3))
+console.log(FirstAndLast([5,7,7,8,8,10], 6))
