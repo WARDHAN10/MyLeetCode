@@ -9,7 +9,7 @@ var isLongPressedName =  (name, typed) => {
         return false
     }
 
-    while(j!=typed.length && i!=name.length){
+    while(j!=typed.length-1 && i!=name.length-1){
         if (name[i] == typed[j]) {
             if(i!=name.length-1){
                 i++
