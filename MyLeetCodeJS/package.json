@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/WARDHAN10/MyLeetCode#readme",
   "dependencies": {
+    "aws-sdk": "^2.1050.0",
     "axios": "^0.24.0",
     "body-parser": "^1.19.0",
     "dotenv": "^10.0.0",
