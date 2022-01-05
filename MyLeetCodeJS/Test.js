@@ -4,7 +4,7 @@ const AWS = require('aws-sdk');
 var region = "us-east-2";
 var accessKeyId = "AKIAVBXZN6AGMQVMHMQ2";
 var secretAccessKey = "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";
-const tableName = 'covid3';
+const tableName = 'covid2';
 const app = express()
 
 var dynamoDB = new AWS.DynamoDB({
@@ -62,8 +62,8 @@ const data = {
 
 app.get("/rows/all", (req, res) => {
 
-    //creating the schema for dynamoDB table
-    const Schema = {}
+    try//creating the schema for dynamoDB table
+   { const Schema = {}
     let DynamoDbObject = []
     for (let i = 0; i < data['records'].length; i++) {
         Schema['dataRep'] = {
@@ -127,7 +127,12 @@ app.get("/rows/all", (req, res) => {
         });
 
     }
+    return res.status(200)
+}
 
+catch(err){
+    return err
+}
 
 });
 
