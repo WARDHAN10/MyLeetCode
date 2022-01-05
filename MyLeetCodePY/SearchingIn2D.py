@@ -30,15 +30,15 @@ def BS(matrix,target):
 
 
 
-n,m=input().split()
-matrix=[]
-for i in range(int(n)):
-    col = [int(x) for x in input().strip().split()]
-    matrix.append(col)
+# n,m=input().split()
+# matrix=[]
+# for i in range(int(n)):
+#     col = [int(x) for x in input().strip().split()]
+#     matrix.append(col)
 
-for j in range(int(input())):
-    target =int(input())
-print(BS([[1, 3, 5, 7], [10, 11, 16, 20], [23, 30, 34, 60]],3))
-for j in range(int(input())):
-    target =int(input())
-    print(BS(matrix,key))
+# for j in range(int(input())):
+#     target =int(input())
+# print(BS([[1, 3, 5, 7], [10, 11, 16, 20], [23, 30, 34, 60]],3))
+# for j in range(int(input())):
+#     target =int(input())
+#     print(BS(matrix,key))
