@@ -5,6 +5,7 @@ const AWS = require("aws-sdk");
 var region = "us-east-2";
 var accessKeyId = "AKIAVBXZN6AGMQVMHMQ2";
 var secretAccessKey = "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";
+const fs = require('fs')
 const app = express();
 AWS.config.update({
   accessKeyId: accessKeyId,
@@ -65,14 +66,25 @@ const docClient = new AWS.DynamoDB.DocumentClient();
 //   ],
 // };
 
+
 app.get("/rows/all", (req, res) => {
   console.log("API hitted");
   //     try//creating the schema for dynamoDB table
   //    {
-  data["records"].forEach((data) => {
+
+
+      fs.readFile("../Assignment/raw.json", 'utf8' ,function (err, data) {
+  if (err) {
+    throw err;
+  }
+  let obj = JSON.parse(data);
+  RandomData =obj;
+  console.log(obj)
+    obj["records"].forEach((data) => {
     let params = {
-      TableName: "covid3",
+      TableName: "covid-19-json-table",
       Item: {
+        id:data.id,
         dateRep: data.dateRep,
         day: data.day,
         month: data.month,
@@ -98,6 +110,9 @@ app.get("/rows/all", (req, res) => {
       }
     });
   });
+  }
+  )
+
 });
 
 app.listen(3000, () => {
