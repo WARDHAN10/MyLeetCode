@@ -1,0 +1,34 @@
+{
+    "records": [
+        {
+            "dateRep": "14/12/2020",
+            "day": "14",
+            "month": "12",
+            "year": "2020",
+            "cases": 746,
+            "deaths": 6,
+            "countriesAndTerritories": "Afghanistan",
+            "geoId": "AF",
+            "countryterritoryCode": "AFG",
+            "popData2019": 38041757,
+            "continentExp": "Asia",
+            "Cumulative_number_for_14_days_of_COVID-19_cases_per_100000": "9.01377925",
+            "id": 1
+        },
+        {
+            "dateRep": "14/12/2020",
+            "day": "14",
+            "month": "12",
+            "year": "2020",
+            "cases": 746,
+            "deaths": 6,
+            "countriesAndTerritories": "Afghanistan",
+            "geoId": "AF",
+            "countryterritoryCode": "AFG",
+            "popData2019": 38041757,
+            "continentExp": "Asia",
+            "Cumulative_number_for_14_days_of_COVID-19_cases_per_100000": "9.01377925",
+            "id": 2
+        }
+    ]
+}
