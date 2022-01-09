@@ -1,84 +1,72 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"reflect"
+	"log"
+	"math/rand"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
-	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 )
 
-//making struct
-type Records struct {
-	Records []Record `json:"records"`
+func getRandomDate() string {
+	min := time.Date(1970, 1, 0, 0, 0, 0, 0, time.UTC).Unix()
+	max := time.Date(2070, 1, 0, 0, 0, 0, 0, time.UTC).Unix()
+	delta := max - min
+
+	sec := rand.Int63n(delta) + min
+	date := time.Unix(sec, 0)
+	// res1 := strings.Split(date.String(), " ")
+	res := date.Format("2006/01/02")
+	return res
 }
 
-type Record struct {
-	Id                                     int    `json:"id"`
-	DateRep                                string `json:"dateRep"`
-	Day                                    string `json:"day"`
-	Month                                  string `json:"month"`
-	Year                                   string `json:"year"`
-	Cases                                  int    `json:"cases"`
-	Deaths                                 int    `json:"deaths"`
-	CountriesAndTerritories                string `json:"countriesAndTerritories"`
-	CountryterritoryCode                   string `json:"countryterritoryCode"`
-	PopData2019                            int    `json:"popData2019"`
-	ContinentExp                           string `json:"continentExp"`
-	Cumulative_number_for_14_days_of_COVID string `json:"Cumulative_number_for_14_days_of_COVID"`
+//genreate random date return int value
+func getRandomInt() int {
+	rand.Seed(time.Now().Unix())
+	min := 1
+	max := 61900
+	no := rand.Intn(max-min) + min
+	return no
 }
-
-func ReadFile() {
-	//importin the data from json
-	data, err := ioutil.ReadFile("./input.json")
-	if err != nil {
-		fmt.Println(err)
-	}
-	var obj Records
-	//convert the data into the struct
-	err = json.Unmarshal(data, &obj)
-	if err != nil {
-		fmt.Println("error:", err)
-	}
-
-	fmt.Println(reflect.TypeOf(obj))
-	//connect the database
+func main() {
 	DynamoDB_Config := &aws.Config{
 		Region:      aws.String("us-east-2"),
 		Credentials: credentials.NewStaticCredentials("AKIAVBXZN6AGMQVMHMQ2", "J4q0yzSVwNMAsrayKiYZUTmUydYS8ua4miAiG30J", ""),
 	}
 	DynamoDbSession := session.New(DynamoDB_Config)
 	DB := dynamodb.New(DynamoDbSession)
-	//connect adding the data into table
-	for _, element := range obj.Records {
+	table := "covid-19-2"
+	dateRep := getRandomDate()
+	id := getRandomInt()
 
-		fmt.Println(element)
+	input := &dynamodb.UpdateItemInput{
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+			":r": {
+				S: aws.String(dateRep),
+			},
+		},
+		TableName: aws.String(table),
+		Key: map[string]*dynamodb.AttributeValue{
+			"id": {
+				N: aws.String("1"),
+			},
+		},
+		ReturnValues:     aws.String("UPDATED_NEW"),
+		UpdateExpression: aws.String("set dateRep = :r"),
+	}
+	_, err := DB.UpdateItem(input)
 
-		//convert go attribute into dynamodb
-		av, err := dynamodbattribute.MarshalMap(element)
+	if err != nil {
+		log.Fatalf("Got error calling updateItem: %s", err)
+
 		if err != nil {
-			fmt.Println("error:", err)
-		}
-
-		//insert attribute in the table
-		input := &dynamodb.PutItemInput{
-			Item:      av,
-			TableName: aws.String("covid-19-2"),
-		}
-
-		_, err = DB.PutItem(input)
-		if err != nil {
-			fmt.Println("Got error calling PutItem: ", err)
+			panic(fmt.Sprintf("Failed to unmarshal Record, %v", err))
 		}
 
 	}
-}
-
-func main() {
-	ReadFile()
+	fmt.Printf("updated Records are with id : %v\n  updated dateRep : %v\n", id, dateRep)
 }
