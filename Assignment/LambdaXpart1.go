@@ -44,4 +44,21 @@ func main() {
 	var responseObject Response
 	json.Unmarshal(bodyBytes, &responseObject)
 	fmt.Printf("API Response as struct %+v\n", responseObject)
+
+	// // writing the content in the file
+	// f, err := os.Create("filename")
+
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+
+	// defer f.Close()
+
+	// _, err2 := f.WriteString("enter your data")
+
+	// if err2 != nil {
+	// 	log.Fatal(err2)
+	// }
+
+	// fmt.Println("done")
 }
