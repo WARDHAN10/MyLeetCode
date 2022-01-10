@@ -2,8 +2,4 @@ module main.go
 
 go 1.13
 
-require (
-	github.com/aws/aws-sdk-go-v2 v1.12.0
-	github.com/aws/aws-sdk-go-v2/service/redshiftdata v1.12.0
-	github.com/aws/smithy-go v1.9.1
-)
+require github.com/alexbrainman/odbc v0.0.0-20211220213544-9c9a2e61c5e2
