@@ -1,53 +1,45 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
-	"net/http"
 	"time"
+
+	"github.com/aws/aws-lambda-go/events"
+	"github.com/aws/aws-lambda-go/lambda"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/redshiftdataapiservice"
 	"github.com/aws/aws-sdk-go/service/redshiftdataapiservice/redshiftdataapiserviceiface"
-	"github.com/gorilla/mux"
 )
 
 var redshiftclient redshiftdataapiserviceiface.RedshiftDataAPIServiceAPI
 
-type Response struct {
-	QueryResult string `json:"query"`
-	Status      int    `json:"status"`
-}
+// type Records struct {
+// 	Records []Record `json:"records"`
+// }
+
 type Record struct {
-	data []Field
-}
-type Field struct {
-	_ struct{} `type:"structure"`
-
-	// A value of the BLOB data type.
-	// BlobValue is automatically base64 encoded/decoded by the SDK.
-	BlobValue []byte `locationName:"blobValue" type:"blob"`
-
-	// A value of the Boolean data type.
-	BooleanValue *bool `locationName:"booleanValue" type:"boolean"`
-
-	// A value of the double data type.
-	DoubleValue *float64 `locationName:"doubleValue" type:"double"`
-
-	// A value that indicates whether the data is NULL.
-	IsNull *bool `locationName:"isNull" type:"boolean"`
-
-	// A value of the long data type.
-	LongValue *int64 `locationName:"longValue" type:"long"`
-
-	// A value of the string data type.
-	StringValue *string `locationName:"stringValue" type:"string"`
+	Id                                     int64  `json:"id"`
+	DateRep                                string `json:"dateRep"`
+	Day                                    string `json:"day"`
+	Month                                  string `json:"month"`
+	Year                                   string `json:"year"`
+	Cases                                  int64  `json:"cases"`
+	Deaths                                 int64  `json:"deaths"`
+	GeoId                                  string `json:"geoid"`
+	CountriesAndTerritories                string `json:"countriesAndTerritories"`
+	CountryterritoryCode                   string `json:"countryterritoryCode"`
+	PopData2019                            int64  `json:"popData2019"`
+	ContinentExp                           string `json:"continentExp"`
+	Cumulative_number_for_14_days_of_COVID string `json:"Cumulative_number_for_14_days_of_COVID"`
 }
 
-func homeLink(w http.ResponseWriter, r *http.Request) {
+func handleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	s3Config := &aws.Config{
 		Region:      aws.String("us-east-2"),
 		Credentials: credentials.NewStaticCredentials("AKIAVBXZN6AGHRMZKDM3", "MOYSuuVieKmDf/NqV1RR+WfICKjL2PZjLua1uBl3", ""),
@@ -66,8 +58,37 @@ func homeLink(w http.ResponseWriter, r *http.Request) {
 	isSynchronous := true
 
 	responseData := execute_sql_data_api(redshift_database, command, query, redshift_user, redshift_cluster_id, isSynchronous)
-	res := responseData[0][0]
-	fmt.Println("response", res)
+	var data1 []interface{}
+
+	for i := 0; i < len(responseData); i++ {
+		var data Record
+		data.Id = *responseData[i][0].LongValue
+		data.DateRep = *responseData[i][1].StringValue
+		data.Day = *responseData[i][2].StringValue
+		data.Month = *responseData[i][3].StringValue
+		data.Year = *responseData[i][4].StringValue
+		data.Cases = *responseData[i][5].LongValue
+		data.Deaths = *responseData[i][6].LongValue
+		data.GeoId = *responseData[i][7].StringValue
+		data.CountriesAndTerritories = *responseData[i][8].StringValue
+		data.CountryterritoryCode = *responseData[i][9].StringValue
+		data.PopData2019 = *responseData[i][10].LongValue
+		data.ContinentExp = *responseData[i][11].StringValue
+		data.Cumulative_number_for_14_days_of_COVID = *responseData[i][12].StringValue
+		data1 = append(data1, data)
+		fmt.Println("data", data)
+	}
+	// res := responseData[0][0]
+	// fmt.Println("res", res)
+	output, err := json.Marshal(data1)
+	if err != nil {
+		// logs error and exists
+		log.Fatal(err)
+	}
+
+	fmt.Println("response", string(output))
+	return events.APIGatewayProxyResponse{Body: string(output), StatusCode: 200}, nil
+
 	// fmt.Fprintf(w, res)
 }
 func execute_sql_data_api(redshift_database string, command string, query string, redshift_user string, redshift_cluster_id string, isSynchronous bool) [][]*redshiftdataapiservice.Field {
@@ -130,15 +151,8 @@ func execute_sql_data_api(redshift_database string, command string, query string
 					// logs error and exists
 					log.Fatal(getresult_err)
 				}
+				fmt.Println(getresult_req.Records)
 				FinalResult := getresult_req.Records
-				output, err := json.Marshal(FinalResult[0])
-				var data Record
-				if err != nil {
-					fmt.Println(output)
-				}
-
-				json.Unmarshal(output, &data)
-				fmt.Println(output, , FinalResult, FinalResult[0][0].GoString())
 
 				return FinalResult
 			}
@@ -163,7 +177,6 @@ func execute_sql_data_api(redshift_database string, command string, query string
 }
 
 func main() {
-	router := mux.NewRouter().StrictSlash(true)
-	router.HandleFunc("/", homeLink)
-	log.Fatal(http.ListenAndServe(":8080", router))
+	lambda.Start(handleRequest)
+
 }

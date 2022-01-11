@@ -81,8 +81,8 @@ func main() {
 
 }
 
-func handleRequest(ctx context.Context, e events.DynamoDBEvent) {
-	fmt.Println("records", e.Records[0], "type:", reflect.TypeOf(e.Records[0]))
+func handleRequest(ctx context.Context, e events.S3Event) {
+	fmt.Println("records", e, e.Records[0], "type:", reflect.TypeOf(e.Records[0]))
 	var response S3Event
 	s3Config := &aws.Config{
 		Region:      aws.String("us-east-2"),
@@ -94,6 +94,7 @@ func handleRequest(ctx context.Context, e events.DynamoDBEvent) {
 	s3Session := session.New(s3Config)
 	svc := s3.New(s3Session)
 	uploader := s3manager.NewUploader(s3Session)
+
 	outputJSON, err := json.Marshal(e)
 	if err != nil {
 		fmt.Println(err)

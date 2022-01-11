@@ -44,7 +44,7 @@ func main() {
 	DB := dynamodb.New(DynamoDbSession)
 	table := "covid-19-2"
 	//need to run till 100
-	for i := 0; i < 2; i++ {
+	for i := 0; i < 100; i++ {
 
 		dateRep := getRandomDate(getRandomInt(), getRandomInt())
 		id := getRandomInt()
@@ -58,7 +58,7 @@ func main() {
 			TableName: aws.String(table),
 			Key: map[string]*dynamodb.AttributeValue{
 				"id": {
-					N: aws.String("1"),
+					N: aws.String(string(getRandomInt())),
 				},
 			},
 			ReturnValues:     aws.String("UPDATED_NEW"),

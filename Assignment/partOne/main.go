@@ -26,6 +26,7 @@ type Record struct {
 	Year                                   string `json:"year"`
 	Cases                                  int    `json:"cases"`
 	Deaths                                 int    `json:"deaths"`
+	GeoId								   string `json:"geoid"`
 	CountriesAndTerritories                string `json:"countriesAndTerritories"`
 	CountryterritoryCode                   string `json:"countryterritoryCode"`
 	PopData2019                            int    `json:"popData2019"`
