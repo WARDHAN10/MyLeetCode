@@ -1,164 +1,169 @@
 package main
 
 import (
-	"database/sql"
+	"encoding/json"
 	"fmt"
 	"log"
+	"net/http"
+	"time"
 
-	_ "github.com/alexbrainman/odbc"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/redshiftdataapiservice"
+	"github.com/aws/aws-sdk-go/service/redshiftdataapiservice/redshiftdataapiserviceiface"
+	"github.com/gorilla/mux"
 )
 
-func main() {
-	db, err := sql.Open("odbc", "DSN=redshift-cluster-1.ctz9p5kna8g0.us-east-2.redshift.amazonaws.com:5439/dev")
-	// "DSN=Driver={driver};Server=redshift-cluster-1.ctz9p5kna8g0.us-east-2.redshift.amazonaws.com:5439/dev;Database=dev;UID=harshwardhan;PWD=Harsh123;Port=5439")
-	if err != nil {
-		log.Fatal(err)
-	}
-	// Driver={Amazon Redshift (x64)}; Server=redshift-cluster-1.ctz9p5kna8g0.us-east-2.redshift.amazonaws.com; Database=dev
-	var (
-		daterep string
-	)
+var redshiftclient redshiftdataapiserviceiface.RedshiftDataAPIServiceAPI
 
-	rows, err := db.Query("SELECT daterep FROM 'dev'.'public'.'newr'")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer rows.Close()
-	for rows.Next() {
-		err := rows.Scan(&daterep)
-		if err != nil {
-			log.Fatal(err)
-		}
-		fmt.Println(daterep)
-	}
-	err = rows.Err()
-	if err != nil {
-		log.Fatal(err)
-	}
+type Response struct {
+	QueryResult string `json:"query"`
+	Status      int    `json:"status"`
+}
+type Record struct {
+	data []Field
+}
+type Field struct {
+	_ struct{} `type:"structure"`
 
-	defer db.Close()
+	// A value of the BLOB data type.
+	// BlobValue is automatically base64 encoded/decoded by the SDK.
+	BlobValue []byte `locationName:"blobValue" type:"blob"`
+
+	// A value of the Boolean data type.
+	BooleanValue *bool `locationName:"booleanValue" type:"boolean"`
+
+	// A value of the double data type.
+	DoubleValue *float64 `locationName:"doubleValue" type:"double"`
+
+	// A value that indicates whether the data is NULL.
+	IsNull *bool `locationName:"isNull" type:"boolean"`
+
+	// A value of the long data type.
+	LongValue *int64 `locationName:"longValue" type:"long"`
+
+	// A value of the string data type.
+	StringValue *string `locationName:"stringValue" type:"string"`
 }
 
-// import (
-// 	"database/sql"
-// 	"fmt"
-// 	"log"
+func homeLink(w http.ResponseWriter, r *http.Request) {
+	s3Config := &aws.Config{
+		Region:      aws.String("us-east-2"),
+		Credentials: credentials.NewStaticCredentials("AKIAVBXZN6AGHRMZKDM3", "MOYSuuVieKmDf/NqV1RR+WfICKjL2PZjLua1uBl3", ""),
+	}
+	// Create session
+	var sess = session.Must(session.NewSession(s3Config))
+	// Initialize the redshift client
+	redshiftclient = redshiftdataapiservice.New(sess)
+	// responses := ordered_map.NewOrderedMap()
+	command := "SELECT"
+	query := "SELECT * FROM dev.public.newr"
+	redshift_database := "dev"
+	redshift_user := "harshwardhan"
+	redshift_cluster_id := "redshift-cluster-1"
 
-// 	_ "github.com/lib/pq"
-// )
+	isSynchronous := true
 
-// func MakeRedshfitConnection(username, password, host, port, dbName string) (*sql.DB, error) {
+	responseData := execute_sql_data_api(redshift_database, command, query, redshift_user, redshift_cluster_id, isSynchronous)
+	res := responseData[0][0]
+	fmt.Println("response", res)
+	// fmt.Fprintf(w, res)
+}
+func execute_sql_data_api(redshift_database string, command string, query string, redshift_user string, redshift_cluster_id string, isSynchronous bool) [][]*redshiftdataapiservice.Field {
+	var max_wait_cycles = 20
+	var attempts = 0
+	var query_status = ""
+	var FinalResult [][]*redshiftdataapiservice.Field
+	done := false
 
-// 	url := fmt.Sprintf("sslmode=require user=%v password=%v host=%v port=%v dbname=%v",
-// 		username,
-// 		password,
-// 		host,
-// 		port,
-// 		dbName)
+	// Calling Redshift Data API with executeStatement()
+	execstmt_req, execstmt_err := redshiftclient.ExecuteStatement(&redshiftdataapiservice.ExecuteStatementInput{
+		ClusterIdentifier: aws.String(redshift_cluster_id),
+		DbUser:            aws.String(redshift_user),
+		Database:          aws.String(redshift_database),
+		Sql:               aws.String(query),
+	})
+	fmt.Println(execstmt_req)
+	if execstmt_err != nil {
+		// logs error and exists
+		log.Fatal(execstmt_err)
+	}
 
-// 	var err error
-// 	var db *sql.DB
-// 	db, err = sql.Open("postgres", url)
+	descstmt_req, descstmt_err := redshiftclient.DescribeStatement(&redshiftdataapiservice.DescribeStatementInput{
+		Id: execstmt_req.Id,
+	})
+	query_status = aws.StringValue(descstmt_req.Status)
 
-// 	if err != nil {
-// 		fmt.Println(err)
-// 	}
+	if descstmt_err != nil {
+		// logs error and exists
+		log.Fatal(descstmt_err)
+	}
 
-// 	if err = db.Ping(); err != nil {
-// 		fmt.Errorf("redshift ping error : (%v)", err)
-// 	}
-// 	return db, nil
-// }
+	//Wait until query is finished or max cycles limit has been reached.
+	for done == false && isSynchronous && attempts < max_wait_cycles {
+		attempts += 1
+		time.Sleep(1 * time.Second)
+		descstmt_req, descstmt_err := redshiftclient.DescribeStatement(&redshiftdataapiservice.DescribeStatementInput{
+			Id: execstmt_req.Id,
+		})
+		if descstmt_err != nil {
+			// logs error and exists
+			log.Fatal(descstmt_err)
+		}
+		fmt.Println(descstmt_req)
+		query_status = aws.StringValue(descstmt_req.Status)
 
-// func main() {
+		if query_status == "FAILED" {
+			// Fatal functions call os.Exit(1) after writing the log message
+			log.Fatal("Query status: ", query_status, " .... for query--> ", query)
+		} else if query_status == "FINISHED" {
+			log.Print("Query status: ", query_status, " .... for query--> ", query)
+			done = true
 
-// 	username := "Harshwardhan"
-// 	password := "Harsh123"
-// 	host := "redshift-cluster-1.ctz9p5kna8g0.us-east-2.redshift.amazonaws.com:5439/dev"
-// 	port := "5439"
-// 	dbname := "dev"
-// 	db, err := MakeRedshfitConnection(username, password, host, port, dbname)
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
-// 	var (
-// 		daterep string
-// 	)
-// 	rows, err := db.Query("SELECT daterep FROM 'dev'.'public'.'newr'")
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
-// 	defer rows.Close()
-// 	for rows.Next() {
-// 		err := rows.Scan(&daterep)
-// 		if err != nil {
-// 			log.Fatal(err)
-// 		}
-// 		fmt.Println(daterep)
-// 	}
-// 	err = rows.Err()
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
+			if *descstmt_req.HasResultSet {
+				getresult_req, getresult_err := redshiftclient.GetStatementResult(&redshiftdataapiservice.GetStatementResultInput{
+					Id: execstmt_req.Id,
+				})
 
-// 	defer db.Close()
-// }
+				if getresult_err != nil {
+					// logs error and exists
+					log.Fatal(getresult_err)
+				}
+				FinalResult := getresult_req.Records
+				output, err := json.Marshal(FinalResult[0])
+				var data Record
+				if err != nil {
+					fmt.Println(output)
+				}
 
-// // package main
+				json.Unmarshal(output, &data)
+				fmt.Println(output, , FinalResult, FinalResult[0][0].GoString())
 
-// // import (
+				return FinalResult
+			}
+		} else {
+			log.Print("Currently working... query status: ", query_status, " .... for query--> ", query)
+		}
 
-// //     "database/sql"
+		if descstmt_err != nil {
+			// logs error and exists
+			log.Fatal(descstmt_err)
+		}
+	}
 
-// //     "log"
+	//Timeout Precaution
+	if done == false && attempts >= max_wait_cycles && isSynchronous {
+		log.Print("Query status: ", query_status, " .... for query--> ", query)
+		// Fatal functions call os.Exit(1) after writing the log message
+		log.Fatal("Limit for max_wait_cycles has been reached before the query was able to finish. We have exited out of the while-loop. You may increase the limit accordingly.")
+	}
 
-// //     _ "github.com/lib/pq"
-// //  )
+	return FinalResult
+}
 
-// //User appropriate
-// type User struct {
-// 	Name string `sql:"username"`
-// }
-
-// func main() {
-
-// 	db, err := sql.Open("postgres", "postgres://user:pass@host:port/dbname")
-
-// 	if err != nil {
-
-// 		log.Fatalln("to connect", err)
-
-// 	}
-
-// 	defer db.Close()
-
-// 	row, err := db.Query("SELECT username FROM users WHERE username LIKE $1 LIMIT $2", "otiai%", 10)
-
-// 	if err != nil {
-
-// 		log.Fatalln("to query", err)
-
-// 	}
-
-// 	for row.Next() { //line is up to True
-
-// 		user := new(User)
-
-// 		err := row.Scan(&user.Name)
-
-// 		if err != nil {
-
-// 			log.Fatalln("to scan the results", err)
-
-// 		}
-
-// 		log.Printf("%+v\n", user)
-
-// 	}
-
-// 	if err := row.Err(); err != nil {
-
-// 		log.Fatalln("in iteration", err)
-
-// 	}
-// }
+func main() {
+	router := mux.NewRouter().StrictSlash(true)
+	router.HandleFunc("/", homeLink)
+	log.Fatal(http.ListenAndServe(":8080", router))
+}
