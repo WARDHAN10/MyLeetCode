@@ -42,21 +42,6 @@ type DynamoDBStreamRecord struct {
 	StreamViewType              string                              `json:"StreamViewType"`
 }
 
-// type Record struct {
-// 	Id                                     int    `json:"id"`
-// 	DateRep                                string `json:"dateRep"`
-// 	Day                                    string `json:"day"`
-// 	Month                                  string `json:"month"`
-// 	Year                                   string `json:"year"`
-// 	Cases                                  int    `json:"cases"`
-// 	Deaths                                 int    `json:"deaths"`
-// 	CountriesAndTerritories                string `json:"countriesAndTerritories"`
-// 	CountryterritoryCode                   string `json:"countryterritoryCode"`
-// 	PopData2019                            int    `json:"popData2019"`
-// 	ContinentExp                           string `json:"continentExp"`
-// 	Cumulative_number_for_14_days_of_COVID string `json:"Cumulative_number_for_14_days_of_COVID"`
-// }
-
 func main() {
 	//just need to handle the input data
 	lambda.Start(handleRequest)
