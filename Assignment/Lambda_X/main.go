@@ -4,38 +4,44 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
+	"strconv"
 	"time"
 
+	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 )
 
-func getRandomDate(Max int, Min int) string {
-	rand.Seed(time.Now().Unix())
+func getRandomDate() string {
+	rand.Seed(time.Now().UnixNano())
+	min := 2004
+	max := 2021
 
-	min := time.Date(Max, 1, 0, 0, 0, 0, 0, time.UTC).Unix()
-	max := time.Date(Min, 1, 0, 0, 0, 0, 0, time.UTC).Unix()
-	delta := max - min
+	year := rand.Intn(max-min+1) + 2004
+	month := rand.Intn(12) + 1
+	day := 1
 
-	sec := rand.Int63n(delta) + min
-	date := time.Unix(sec, 0)
-	// res1 := strings.Split(date.String(), " ")
-	res := date.Format("2006-01-02")
-	return res
+	str := fmt.Sprintf("%d-%02d-%d", year, month, day)
+	return str
 }
 
 //genreate random date return int value
 func getRandomInt() int {
-	rand.Seed(time.Now().Unix())
+	rand.Seed(time.Now().UnixNano())
 	min := 1
-	max := 61900
+	max := 100
 	no := rand.Intn(max-min) + min
 	return no
 }
 
 func main() {
+	lambda.Start(handleRequest)
+
+}
+
+func handleRequest() {
 	DynamoDB_Config := &aws.Config{
 		Region:      aws.String("us-east-2"),
 		Credentials: credentials.NewStaticCredentials("AKIAVBXZN6AGMQVMHMQ2", "J4q0yzSVwNMAsrayKiYZUTmUydYS8ua4miAiG30J", ""),
@@ -46,8 +52,9 @@ func main() {
 	//need to run till 100
 	for i := 0; i < 100; i++ {
 
-		dateRep := getRandomDate(getRandomInt(), getRandomInt())
-		id := getRandomInt()
+		dateRep := getRandomDate()
+		// id := getRandomInt()
+		id1 := strconv.Itoa(getRandomInt())
 
 		input := &dynamodb.UpdateItemInput{
 			ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
@@ -58,7 +65,7 @@ func main() {
 			TableName: aws.String(table),
 			Key: map[string]*dynamodb.AttributeValue{
 				"id": {
-					N: aws.String(string(getRandomInt())),
+					N: aws.String(id1),
 				},
 			},
 			ReturnValues:     aws.String("UPDATED_NEW"),
@@ -74,6 +81,6 @@ func main() {
 			}
 
 		}
-		fmt.Printf("updated Records are with id : %v\n  updated dateRep : %v\n", id, dateRep)
+		fmt.Printf("updated Records are with id : %v\n  updated dateRep : %v\n", id1, dateRep)
 	}
 }
