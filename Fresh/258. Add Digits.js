@@ -15,4 +15,5 @@ const addNumber = (num) => {
 //     sum += strNum[i];
 //   }
 //   return sum;
-};
+};      
+    
